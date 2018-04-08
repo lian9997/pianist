@@ -15,10 +15,11 @@ import javax.swing.event.MouseInputListener;
 import model.*;
 
 public class PaintPanel extends JPanel implements MouseMotionListener, MouseInputListener, Runnable {
+	private static final double VERSION = 2.1;
 
-	private static final int SCREEN_MAX_Y = 1100;
-	private static final int SCREEN_MIN_Y = 265;
-	private static final int SCREEN_MAX_X = 1200;
+	private static final int SCREEN_MAX_Y = 760;
+	private static final int SCREEN_MIN_Y = 200;
+	private static final int SCREEN_MAX_X = 910;
 	private LinkedList<Point> points;
 	private LinkedList<Color> colors;
 	private Color currentColor;
@@ -28,7 +29,7 @@ public class PaintPanel extends JPanel implements MouseMotionListener, MouseInpu
 	private final Color goodYellow = new Color(231, 207, 145);
 	private final Color goodCyan = new Color(111, 201, 191);
 	private final Color goodword = new Color(133, 190, 215);
-	private final int DIST_LIMIT = 80;
+	private final int DIST_LIMIT = 50;
 	private final Font instFont = new Font("chalkduster", Font.ITALIC, 24);
 	private final Font saveFont = new Font("chalkduster", Font.ITALIC, 48);
 
@@ -61,7 +62,7 @@ public class PaintPanel extends JPanel implements MouseMotionListener, MouseInpu
 
 		// g.clearRect(0, 0, 1400, 1200);
 
-		g.drawImage(img, 0, 0, 1200, 1440, 0, 0, 1000, 1200, this);
+		g.drawImage(img, 0, 0, 900, 1060, 0, 0, 800, 960, this);
 
 		Point prev = null;
 		Graphics2D g2 = (Graphics2D) g;
@@ -78,7 +79,8 @@ public class PaintPanel extends JPanel implements MouseMotionListener, MouseInpu
 			if (p != null) {
 				if (prev != null)
 					g.drawLine(prev.x, prev.y, p.x, p.y);
-				else {
+				else
+				{
 					g.setColor(colors.get(i++));
 					g.drawLine(p.x, p.y, p.x, p.y);
 				}
@@ -94,7 +96,13 @@ public class PaintPanel extends JPanel implements MouseMotionListener, MouseInpu
 	public void mouseDragged(MouseEvent event) {
 		Point now = event.getPoint();
 		if (isInRange(now)) {
-
+			if(lastHit == null)
+			{
+				lastHit = event.getPoint();
+				model.setOriginNote((int) (((double) SCREEN_MAX_Y - lastHit.y) / SCREEN_MAX_Y * 20) + 60);
+				colors.add(currentColor);
+				points.add(now);
+			}
 			points.add(event.getPoint());
 			if (now.distance(lastHit) > DIST_LIMIT) {
 				double angle;
@@ -134,23 +142,22 @@ public class PaintPanel extends JPanel implements MouseMotionListener, MouseInpu
 		Point p = event.getPoint();
 		if (p.x > 0 && p.x < SCREEN_MAX_X && p.y > 0 && p.y < SCREEN_MIN_Y) {
 			// up
-			if (p.x < 240) {
+			if (p.x < SCREEN_MAX_X / 4) {
 				points = new LinkedList<Point>();
 				colors = new LinkedList<Color>();
 				model = new Model();
-			} else if (p.x < 480) {
+			} else if (p.x < SCREEN_MAX_X / 2) {
 				/*
 				 * instnum = (instnum + 1) % 128; model.setInstrucment(instnum); instname =
 				 * model.getInstrumentName(instnum);
 				 */
-			} else if (p.x < 720) {
+			} else if (p.x < SCREEN_MAX_X / 4*3) {
 				model.saveAudio();
 				save();
 				model.setInstrucment(instnum);
-			} else if (p.x < 960) {
-				// do nothing
+			} else if (p.x < 720) {
+//do nothing
 			} else {
-				System.out.println("play");
 				playallThread = new Thread(() -> model.playAll());
 				playallThread.start();
 			}
@@ -158,17 +165,17 @@ public class PaintPanel extends JPanel implements MouseMotionListener, MouseInpu
 		}
 		if (p.y > SCREEN_MAX_Y && p.y < SCREEN_MAX_Y + 200 && p.x > 0 && p.x < SCREEN_MAX_X) {
 			// bottom
-			if (p.x < 240) {
+			if (p.x < SCREEN_MAX_X/5) {
 				currentColor = goodGreen;
 				instnum = 0;
 				instname = "piano";
-			} else if (p.x < 480) {
+			} else if (p.x < SCREEN_MAX_X/5*2) {
 				currentColor = goodYellow;
 				instnum = 34;
-			} else if (p.x < 720) {
+			} else if (p.x < SCREEN_MAX_X/5*3) {
 				currentColor = goodPink;
 				instnum = 32;
-			} else if (p.x < 960) {
+			} else if (p.x < SCREEN_MAX_X/5*4) {
 				currentColor = goodCyan;
 				instnum = 39;
 			} else {
@@ -177,7 +184,6 @@ public class PaintPanel extends JPanel implements MouseMotionListener, MouseInpu
 			}
 			model.setInstrucment(instnum);
 			instname = model.getInstrumentName(instnum);
-			System.out.println(instname);
 		}
 	}
 
@@ -190,41 +196,25 @@ public class PaintPanel extends JPanel implements MouseMotionListener, MouseInpu
 	}
 
 	@Override
-	public void mousePressed(MouseEvent arg0) {
+	public void mousePressed(MouseEvent event) {
 		if (endThread != null) {
 			endThread.interrupt();
 			Thread.interrupted();
 			endThread = null;
 		}
-		if (isInRange(arg0.getPoint())) {
+		if (isInRange(event.getPoint())) {
 			if (!save.equals("save"))
 				save = "save";
-			lastHit = arg0.getPoint();
+			lastHit = event.getPoint();
 			model.setOriginNote((int) (((double) SCREEN_MAX_Y - lastHit.y) / SCREEN_MAX_Y * 20) + 60);
 			colors.add(currentColor);
-			Point now = arg0.getPoint();
-
-			points.add(arg0.getPoint());
-			if (now.distance(lastHit) > DIST_LIMIT) {
-				double angle;
-
-				if (now.x - lastHit.x == 0)
-					angle = now.y > lastHit.y ? 270 : 90;
-				else
-					angle = Math.atan(((double) now.y - lastHit.y) / ((double) now.x - lastHit.x)) * 57.2957795131;
-
-				if (now.x > lastHit.x && now.y > lastHit.y) {
-					angle = 360.0 - angle;
-				} else if (now.x < lastHit.x && now.y > lastHit.y) {
-					angle = 180.0 - angle;
-				} else if (now.x > lastHit.x && now.y < lastHit.y) {
-					angle = -angle;
-				} else {
-					angle = 180.0 - angle;
-				}
-				model.nextStep((int) angle);
-				lastHit = now;
-			}
+			Point now;
+			points.add(now = event.getPoint());
+			
+		}
+		else
+		{
+			lastHit = null;
 		}
 	}
 

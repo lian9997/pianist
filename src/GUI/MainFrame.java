@@ -3,13 +3,14 @@ package GUI;
 import javax.swing.JFrame;
 
 public class MainFrame extends JFrame{
+	private static final double VERSION = 2.1;
 	
 	Thread t;
 	
 	public MainFrame ()
 	{
 		this.setTitle("pianist");
-		this.setSize(1200, 1400);
+		this.setSize(900, 1050); 
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		PaintPanel paintPanel = new PaintPanel();
 		this.add(paintPanel);
