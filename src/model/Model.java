@@ -13,10 +13,11 @@ public class Model {
 	static protected int channel;
 	static protected int lastNote = 0;
 	private Instrument instruments[];
-	static protected Map<Integer, Integer> data;
+	static protected LinkedList<DataStruct> data;
 	static int channelIndex = 0;
+
 	public Model() {
-		data = new LinkedHashMap<Integer, Integer>();
+		data = new LinkedList<DataStruct>();
 
 
 		try {
@@ -40,6 +41,8 @@ public class Model {
 		PlayThread tmp = new PlayThread(midiNote, true);
 		Thread threadOrg = new Thread(tmp);
 		threadOrg.start();
+		Thread.currentThread().interrupt();
+		Thread.interrupted();
 	}
 
 	/* start a new thread to play the sound */
@@ -49,6 +52,8 @@ public class Model {
 		PlayThread tmp = new PlayThread(degreeTmp, false);
 		Thread thread = new Thread(tmp);
 		thread.start();
+		Thread.currentThread().interrupt();
+		Thread.interrupted();
 	}
 
 	public String getInstrumentName(int a) {
@@ -112,8 +117,9 @@ public class Model {
 			MidiEvent event1 = new MidiEvent(message, 0);
 			track.add(event1);
 			int time = 1;
-			for(int c : data.keySet()) {
-				MidiMessage messageTmp = new ShortMessage(ShortMessage.NOTE_ON, data.get(c), c, 100);
+			for(DataStruct c : data) {
+				System.out.println(c);
+				MidiMessage messageTmp = new ShortMessage(ShortMessage.NOTE_ON, c.getChannel(), c.getNote(), 100);
 				MidiEvent eventTmp = new MidiEvent(messageTmp, time++);
 				track.add(eventTmp);
 			}

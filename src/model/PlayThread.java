@@ -14,7 +14,7 @@ public class PlayThread implements Runnable{
 		this.isNote = isNote;
 		if(isNote) {
 			synchronized(Model.data) {
-				Model.data.put(degree, Model.channel);
+				Model.data.add(new DataStruct(degree, Model.channel));
 			}
 			Model.lastNote = degree;
 		}
@@ -67,14 +67,14 @@ public class PlayThread implements Runnable{
 			}
 
 		}
-		System.out.println(Model.channel);
+		//System.out.println(Model.channel);
 
 	}
 
 	private void addToData(int data, int inc) {
 		synchronized(Model.data) {
 			Model.lastNote = Model.lastNote + inc;
-			Model.data.put(Model.lastNote, Model.channel);
+			Model.data.add(new DataStruct(Model.lastNote, Model.channel));
 		}
 	}
 	private boolean inBetween(int x, int y, int c) {
@@ -86,14 +86,14 @@ public class PlayThread implements Runnable{
 
 	public void playAll() {
 		synchronized(Model.data) {
-			for(int i : Model.data.keySet()) {
-				Model.midiChannel[Model.data.get(i)].noteOn(i, 100);
+			for(DataStruct i : Model.data) {
+				Model.midiChannel[i.getChannel()].noteOn(i.getNote(), 100);
 				try {
 					Thread.sleep(200);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}finally {
-					Model.midiChannel[Model.data.get(i)].noteOn(i, 0);
+					Model.midiChannel[i.getChannel()].noteOn(i.getNote(), 0);
 				}
 			}
 		}
