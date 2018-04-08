@@ -3,6 +3,7 @@ package model;
 import javax.sound.midi.*;
 
 public class PlayThread implements Runnable{
+	private static final double VERSION = 2.1;
 
 	private int degree;
 	private boolean isNote;

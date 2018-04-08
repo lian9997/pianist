@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.util.*;
 
 public class Model {
+	private static final double VERSION = 2.1;
+
 	static protected Synthesizer synthesizer;
 	static protected MidiChannel[] midiChannel;
 	static protected int threadCount = 0;

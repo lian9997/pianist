@@ -1,6 +1,8 @@
 package model;
 
 public class DataStruct {
+	private static final double VERSION = 2.1;
+
 	private int note;
 	private int channel;
 	
